@@ -1,9 +1,7 @@
 package com.jernung.plugins.audio;
 
 import android.content.res.AssetFileDescriptor;
-import android.content.Intent;
 import android.media.MediaPlayer;
-import android.net.Uri;
 import android.os.SystemClock;
 import android.util.Log;
 
@@ -26,21 +24,23 @@ public class AudioPlugin extends CordovaPlugin {
     public boolean execute (String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
 
         if ("play".equals(action)) {
-            playAudio(args.getString(0), args.getInt(1), args.getDouble(2));
+            play(args.getString(0), args.getInt(1), args.getDouble(2));
             callbackContext.success();
+
             return true;
         }
 
         if ("release".equals(action)) {
-            releaseAudio();
+            release();
             callbackContext.success();
+
             return true;
         }
 
         return false;
     }
 
-    private void playAudio (final String path, final Integer start, final Double duration) {
+    private void play (final String path, final Integer start, final Double duration) {
         cordova.getThreadPool().execute(new Runnable() {
             public void run() {
                 try {
@@ -49,7 +49,7 @@ public class AudioPlugin extends CordovaPlugin {
                         AssetFileDescriptor dataDescriptor = cordova.getActivity().getAssets().openFd(path);
 
                         // attempt to release old audio
-                        releaseAudio();
+                        release();
 
                         // prepare new audio to be played
                         Log.d(PLUGIN_NAME, "Preparing: " + path);
@@ -77,7 +77,7 @@ public class AudioPlugin extends CordovaPlugin {
         });
     }
 
-    private void releaseAudio () {
+    private void release () {
         if (mMediaPlayer != null) {
             mMediaPlayer.release();
             mMediaPlayer = null;
