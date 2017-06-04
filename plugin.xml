@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
+        id="com-jernung-plugins-audio"
+        version="0.1.0">
+
+  <name>Audio Plugin</name>
+  <description>A cordova plugin for audio.</description>
+  <author>Jernung, LLC</author>
+  <license>MIT</license>
+  <keywords>cordova,audio</keywords>
+
+  <engines>
+    <engine name="cordova" version=">=6.0.0" />
+  </engines>
+
+  <js-module src="www/audio.js" name="AudioPlugin">
+    <clobbers target="plugins.audio" />
+  </js-module>
+
+  <platform name="android">
+
+    <dependency id="com-jernung-plugin-promise" url="https://github.com/mcfarljw/cordova-plugin-promise" />
+
+    <config-file target="config.xml" parent="/*">
+      <feature name="AudioPlugin" >
+        <param name="android-package" value="com.jernung.plugins.audio.AudioPlugin" />
+        <param name="onload" value="true" />
+      </feature>
+    </config-file>
+
+    <source-file src="src/android/AudioPlugin.java" target-dir="src/com/jernung/plugins/audio" />
+
+  </platform>
+
+</plugin>
