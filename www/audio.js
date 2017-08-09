@@ -1,10 +1,10 @@
 var exec = require('cordova/exec');
 
 module.exports = {
-  play: function (path, start, duration) {
+  play: function (path, volume, rate) {
     return new Promise(
       function (resolve, reject) {
-        exec(resolve, reject, 'AudioPlugin', 'play', [path, start || 0, duration || 0]);
+        exec(resolve, reject, 'AudioPlugin', 'play', [path, volume || 1, rate || 1]);
       }
     );
   },

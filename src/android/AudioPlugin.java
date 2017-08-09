@@ -1,37 +1,69 @@
 package com.jernung.plugins.audio;
 
 import android.content.res.AssetFileDescriptor;
-import android.media.MediaPlayer;
-import android.os.SystemClock;
+import android.media.AudioManager;
+import android.media.SoundPool;
+import android.os.Build;
 import android.util.Log;
 
-import java.io.IOException;
-
+import org.apache.cordova.CordovaInterface;
 import org.apache.cordova.CordovaPlugin;
 import org.apache.cordova.CallbackContext;
 
+import org.apache.cordova.CordovaWebView;
 import org.json.JSONArray;
 import org.json.JSONException;
+
+import java.io.IOException;
 
 public class AudioPlugin extends CordovaPlugin {
 
     private static final String PLUGIN_NAME = "AudioPlugin";
 
-    private String mMediaPath = "";
-    private MediaPlayer mMediaPlayer;
+    private SoundPool mSoundPool;
+
+    private int mSoundId = 0;
+    private float mSoundRate = 1.0f;
+    private float mSoundVolume = 1.0f;
+
+    @Override
+    public void initialize(CordovaInterface cordova, CordovaWebView webView) {
+        super.initialize(cordova, webView);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            mSoundPool = new SoundPool.Builder().setMaxStreams(1).build();
+        } else {
+            mSoundPool = new SoundPool(1, AudioManager.STREAM_MUSIC, 0);
+        }
+
+        mSoundPool.setOnLoadCompleteListener(new SoundPool.OnLoadCompleteListener() {
+            @Override
+            public void onLoadComplete(SoundPool soundPool, int soundId, int status) {
+                soundPool.play(soundId, mSoundVolume, mSoundVolume, 1, 0, mSoundRate);
+            }
+        });
+    }
 
     @Override
     public boolean execute (String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
 
         if ("play".equals(action)) {
-            play(args.getString(0), args.getInt(1), args.getDouble(2));
+            unload();
+
+            setRate(args.getDouble(2));
+
+            setVolume(args.getDouble(1));
+
+            play("www/" + args.getString(0));
+
             callbackContext.success();
 
             return true;
         }
 
         if ("release".equals(action)) {
-            release();
+            unload();
+
             callbackContext.success();
 
             return true;
@@ -40,51 +72,34 @@ public class AudioPlugin extends CordovaPlugin {
         return false;
     }
 
-    private void play (final String path, final Integer start, final Double duration) {
+    private void play (final String path) {
         cordova.getThreadPool().execute(new Runnable() {
             public void run() {
                 try {
-                    // only prepare audio if needed
-                    if (!path.equals(mMediaPath)) {
-                        AssetFileDescriptor dataDescriptor = cordova.getActivity().getAssets().openFd(path);
-
-                        // attempt to release old audio
-                        release();
-
-                        // prepare new audio to be played
-                        Log.d(PLUGIN_NAME, "Preparing: " + path);
-                        mMediaPlayer = new MediaPlayer();
-                        mMediaPlayer.setDataSource(dataDescriptor.getFileDescriptor(), dataDescriptor.getStartOffset(), dataDescriptor.getLength());
-                        mMediaPlayer.prepare();
-                        mMediaPath = path;
-                    }
-
-                    Log.d(PLUGIN_NAME, "Path: " + path + " Start: " + start + " Duration: " + duration);
-
-                    // move to start position and play audio
-                    mMediaPlayer.seekTo(start);
-                    mMediaPlayer.start();
-
-                    // stop audio after duration if needed
-                    if (duration > 0) {
-                        SystemClock.sleep(Double.valueOf(duration).longValue());
-                        mMediaPlayer.pause();
-                    }
+                    mSoundId = mSoundPool.load(cordova.getActivity().getAssets().openFd(path), 1);
                 } catch (IOException error) {
-                    Log.d(PLUGIN_NAME, error.getMessage());
+                    Log.d(PLUGIN_NAME, error.toString());
                 }
             }
         });
     }
 
-    private void release () {
-        if (mMediaPlayer != null) {
-            mMediaPlayer.release();
-            mMediaPlayer = null;
-            mMediaPath = "";
-        } else {
-            Log.d(PLUGIN_NAME, "No media to release.");
-        }
+    private void setRate (double rate) {
+        mSoundRate = (float) rate;
     }
 
+    private void setVolume (double volume) {
+        mSoundVolume = (float) volume;
+    }
+
+    private void unload () {
+        if (mSoundId > 0) {
+            mSoundPool.stop(mSoundId);
+            mSoundPool.unload(mSoundId);
+
+            mSoundId = 0;
+        } else {
+            Log.d(PLUGIN_NAME, "No audio found to unload");
+        }
+    }
 }
