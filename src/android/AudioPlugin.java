@@ -3,7 +3,9 @@ package com.jernung.plugins.audio;
 import android.content.res.AssetFileDescriptor;
 import android.media.AudioManager;
 import android.media.SoundPool;
+import android.net.Uri;
 import android.os.Build;
+import android.os.Environment;
 import android.util.Log;
 
 import org.apache.cordova.CordovaInterface;
@@ -14,6 +16,8 @@ import org.apache.cordova.CordovaWebView;
 import org.json.JSONArray;
 import org.json.JSONException;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 
 public class AudioPlugin extends CordovaPlugin {
@@ -54,7 +58,7 @@ public class AudioPlugin extends CordovaPlugin {
 
             setVolume(args.getDouble(1));
 
-            play("www/" + args.getString(0));
+            play(args.getString(0));
 
             callbackContext.success();
 
@@ -75,11 +79,29 @@ public class AudioPlugin extends CordovaPlugin {
     private void play (final String path) {
         cordova.getThreadPool().execute(new Runnable() {
             public void run() {
-                try {
-                    mSoundId = mSoundPool.load(cordova.getActivity().getAssets().openFd(path), 1);
-                } catch (IOException error) {
-                    Log.d(PLUGIN_NAME, error.toString());
+//                try {
+//                    File file = new File(Uri.parse(path).getPath());
+//
+//                    if (file.exists()) {
+//                        Log.d(PLUGIN_NAME, "FOUND: " + Uri.parse(path).getPath());
+//                    } else {
+//                        Log.d(PLUGIN_NAME, "NOT FOUND: " + Uri.parse(path).getPath());
+//                    }
+//
+//                    mSoundId = mSoundPool.load(file.getPath(), 1);
+//                    // mSoundId = mSoundPool.load(cordova.getActivity().getAssets().openFd("www/" + path), 1);
+//                    // mSoundId = mSoundPool.load(cordova.getActivity().getAssets().openFd(path), 1);
+//                } catch (IOException error) {
+//                    Log.d(PLUGIN_NAME, error.toString());
+//                }
+                File file = new File(Uri.parse(path).getPath());
+
+                if (file.exists()) {
+                    mSoundId = mSoundPool.load(file.getPath(), 1);
+                } else {
+                    Log.d(PLUGIN_NAME, "Not found: " + path);
                 }
+
             }
         });
     }
