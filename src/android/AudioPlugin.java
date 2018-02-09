@@ -1,5 +1,6 @@
 package com.jernung.plugins.audio;
 
+import android.content.Context;
 import android.media.AudioManager;
 import android.media.SoundPool;
 import android.net.Uri;
@@ -23,7 +24,6 @@ public class AudioPlugin extends CordovaPlugin {
 
     private SoundPool mSoundPool;
 
-    private int mSoundId = 0;
     private float mSoundRate = 1.0f;
     private float mSoundVolume = 1.0f;
 
@@ -31,10 +31,40 @@ public class AudioPlugin extends CordovaPlugin {
     public void initialize(CordovaInterface cordova, CordovaWebView webView) {
         super.initialize(cordova, webView);
 
+        this.loadSoundPool();
+    }
+
+    @Override
+    public boolean execute (String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
+
+        if ("play".equals(action)) {
+            play(args.getString(0));
+
+            callbackContext.success();
+
+            return true;
+        }
+
+        if ("release".equals(action)) {
+            release();
+
+            callbackContext.success();
+
+            return true;
+        }
+
+        return false;
+    }
+
+    private void loadSoundPool () {
+        if (mSoundPool != null) {
+            mSoundPool.release();
+        }
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            mSoundPool = new SoundPool.Builder().setMaxStreams(1).build();
+            mSoundPool = new SoundPool.Builder().setMaxStreams(4).build();
         } else {
-            mSoundPool = new SoundPool(1, AudioManager.STREAM_MUSIC, 0);
+            mSoundPool = new SoundPool(4, AudioManager.STREAM_MUSIC, 0);
         }
 
         mSoundPool.setOnLoadCompleteListener(new SoundPool.OnLoadCompleteListener() {
@@ -45,46 +75,19 @@ public class AudioPlugin extends CordovaPlugin {
         });
     }
 
-    @Override
-    public boolean execute (String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
-
-        if ("play".equals(action)) {
-            unload();
-
-            setRate(args.getDouble(2));
-
-            setVolume(args.getDouble(1));
-
-            play(args.getString(0));
-
-            callbackContext.success();
-
-            return true;
-        }
-
-        if ("release".equals(action)) {
-            unload();
-
-            callbackContext.success();
-
-            return true;
-        }
-
-        return false;
-    }
-
     private void play (final String path) {
         cordova.getThreadPool().execute(new Runnable() {
             public void run() {
+                Context context = cordova.getActivity().getApplicationContext();
                 File file = new File(Uri.parse(path).getPath());
 
                 if (file.exists()) {
-                    mSoundId = mSoundPool.load(file.getPath(), 1);
+                    mSoundPool.load(file.getPath(), 1);
                 } else {
                     try {
-                        mSoundId = mSoundPool.load(cordova.getActivity().getAssets().openFd(path), 1);
+                        mSoundPool.load(context.getAssets().openFd("www/" + path), 1);
                     } catch (IOException error) {
-                        Log.d(PLUGIN_NAME, "Not found: " + error.getMessage());
+                        Log.d(PLUGIN_NAME, "not found: " + error.getMessage());
                     }
                 }
 
@@ -92,20 +95,7 @@ public class AudioPlugin extends CordovaPlugin {
         });
     }
 
-    private void setRate (double rate) {
-        mSoundRate = (float) rate;
-    }
-
-    private void setVolume (double volume) {
-        mSoundVolume = (float) volume;
-    }
-
-    private void unload () {
-        if (mSoundId > 0) {
-            mSoundPool.stop(mSoundId);
-            mSoundPool.unload(mSoundId);
-
-            mSoundId = 0;
-        }
+    private void release () {
+        this.loadSoundPool();
     }
 }
