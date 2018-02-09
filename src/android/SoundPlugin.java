@@ -1,4 +1,4 @@
-package com.jernung.plugins.audio;
+package com.jernung.plugins.sound;
 
 import android.content.Context;
 import android.media.AudioManager;
@@ -18,9 +18,9 @@ import org.json.JSONException;
 import java.io.File;
 import java.io.IOException;
 
-public class AudioPlugin extends CordovaPlugin {
+public class SoundPlugin extends CordovaPlugin {
 
-    private static final String PLUGIN_NAME = "AudioPlugin";
+    private static final String PLUGIN_NAME = "SoundPlugin";
 
     private SoundPool mSoundPool;
 

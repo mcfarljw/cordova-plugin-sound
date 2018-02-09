@@ -1,7 +1,7 @@
 import AudioToolbox
 
-@objc(AudioPlugin)
-class AudioPlugin : CDVPlugin {
+@objc(SoundPlugin)
+class SoundPlugin : CDVPlugin {
 
   @objc(pluginInitialize)
   override func pluginInitialize() {}

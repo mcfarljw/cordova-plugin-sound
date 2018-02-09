@@ -1,5 +1,30 @@
 {
-  "name": "cordova-plugin-audio",
-  "version": "0.1.0",
-  "description": "A cordova plugin for audio."
+  "name": "cordova-plugin-sound",
+  "version": "0.1.6",
+  "description": "Cordova plugin for native sound.",
+  "author": "Joshua McFarland",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mcfarljw/cordova-plugin-sound"
+  },
+  "engines" : {
+    "node" : ">=6.0.0",
+    "npm": ">=3.8.6"
+  },
+  "keywords": [
+    "cordova",
+    "cordova-android",
+    "cordova-ios",
+    "ecosystem:cordova",
+    "audio",
+    "sound"
+  ],
+  "cordova": {
+    "id": "cordova-plugin-sound",
+    "platforms": [
+      "android",
+      "ios"
+    ]
+  }
 }

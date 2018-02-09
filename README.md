@@ -1,1 +1,1 @@
-# cordova-plugin-audio
+# cordova-plugin-sound

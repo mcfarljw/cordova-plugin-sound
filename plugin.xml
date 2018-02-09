@@ -1,34 +1,49 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
-        id="com-jernung-plugins-audio"
+        id="cordova-plugin-sound"
         version="0.1.0">
 
-  <name>Audio Plugin</name>
-  <description>A cordova plugin for audio.</description>
+  <name>Sound Plugin</name>
+  <description>A cordova plugin for native sound.</description>
   <author>Jernung, LLC</author>
   <license>MIT</license>
-  <keywords>cordova,audio</keywords>
+  <keywords>cordova,audio,sound</keywords>
 
   <engines>
-    <engine name="cordova" version=">=6.0.0" />
+    <engine name="cordova" version=">=6.4.0" />
+    <engine name="cordova-android" version=">=6.3.0" />
+    <engine name="cordova-ios" version=">=4.3.0" />
   </engines>
 
-  <js-module src="www/audio.js" name="AudioPlugin">
-    <clobbers target="plugins.audio" />
+  <js-module src="www/sound.js" name="SoundPlugin">
+    <clobbers target="plugins.sound" />
   </js-module>
+
+  <dependency id="cordova-plugin-add-swift-support" version="1.7.1"/>
 
   <platform name="android">
 
-    <dependency id="com-jernung-plugin-promise" url="https://github.com/mcfarljw/cordova-plugin-promise" />
-
     <config-file target="config.xml" parent="/*">
-      <feature name="AudioPlugin" >
-        <param name="android-package" value="com.jernung.plugins.audio.AudioPlugin" />
+      <feature name="SoundPlugin" >
+        <param name="android-package" value="com.jernung.plugins.sound.SoundPlugin" />
         <param name="onload" value="true" />
       </feature>
     </config-file>
 
-    <source-file src="src/android/AudioPlugin.java" target-dir="src/com/jernung/plugins/audio" />
+    <source-file src="src/android/SoundPlugin.java" target-dir="src/com/jernung/plugins/sound" />
+
+  </platform>
+
+  <platform name="ios">
+
+    <config-file target="config.xml" parent="/*">
+			<feature name="SoundPlugin">
+				<param name="ios-package" value="SoundPlugin" />
+				<param name="onload" value="true" />
+			</feature>
+		</config-file>
+
+    <source-file src="src/ios/SoundPlugin.swift" />
 
   </platform>
 
