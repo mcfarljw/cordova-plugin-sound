@@ -78,9 +78,10 @@ public class SoundPlugin extends CordovaPlugin {
     private void play (final String path) {
         cordova.getThreadPool().execute(new Runnable() {
             public void run() {
-                String trimmedPath = path.replace("^/+", "");
                 Context context = cordova.getActivity().getApplicationContext();
-                File file = new File(Uri.parse(path).getPath());
+                String trimmedPath = path.replaceAll("^/+", "");
+                String absolutePath = context.getFilesDir().getAbsolutePath() + "/files/" + trimmedPath;
+                File file = new File(Uri.parse(absolutePath).getPath());
 
                 if (file.exists()) {
                     mSoundPool.load(file.getPath(), 1);
