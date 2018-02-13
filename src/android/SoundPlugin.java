@@ -78,6 +78,7 @@ public class SoundPlugin extends CordovaPlugin {
     private void play (final String path) {
         cordova.getThreadPool().execute(new Runnable() {
             public void run() {
+                String trimmedPath = path.replace("^/+", "");
                 Context context = cordova.getActivity().getApplicationContext();
                 File file = new File(Uri.parse(path).getPath());
 
@@ -85,7 +86,7 @@ public class SoundPlugin extends CordovaPlugin {
                     mSoundPool.load(file.getPath(), 1);
                 } else {
                     try {
-                        mSoundPool.load(context.getAssets().openFd("www/" + path), 1);
+                        mSoundPool.load(context.getAssets().openFd("www/" + trimmedPath), 1);
                     } catch (IOException error) {
                         Log.d(PLUGIN_NAME, "not found: " + error.getMessage());
                     }
