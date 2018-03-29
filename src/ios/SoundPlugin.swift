@@ -1,7 +1,3 @@
-import AVFoundation
-
-var player: AVAudioPlayer?
-
 @objc(SoundPlugin)
 class SoundPlugin : CDVPlugin {
 
@@ -19,22 +15,10 @@ class SoundPlugin : CDVPlugin {
       let pathName = pathURL.deletingPathExtension?.path ?? ""
 
       if let soundUrl = Bundle.main.url(forResource: "www/" + pathName, withExtension: pathExtension) {
-        do {
-          try AVAudioSession.sharedInstance().setCategory(AVAudioSessionCategoryAmbient)
-          try AVAudioSession.sharedInstance().setActive(true)
+        Sound.category = .ambient
+        Sound.play(url: soundUrl)
 
-          player = try AVAudioPlayer(contentsOf: soundUrl)
-
-          guard let player = player else { return }
-
-          player.play()
-
-          self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
-        } catch let error {
-          print(error.localizedDescription)
-
-          self.commandDelegate.send(pluginResultError, callbackId: command.callbackId)
-        }
+        self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
       } else {
         self.commandDelegate.send(pluginResultError, callbackId: command.callbackId)
       }
