@@ -1,5 +1,7 @@
 import AVFoundation
 
+var player: AVAudioPlayer?
+
 @objc(SoundPlugin)
 class SoundPlugin : CDVPlugin {
 
@@ -15,7 +17,6 @@ class SoundPlugin : CDVPlugin {
       let pathURL = NSURL(fileURLWithPath: path)
       let pathExtension = pathURL.pathExtension ?? "mp3"
       let pathName = pathURL.deletingPathExtension?.path ?? ""
-      var player: AVAudioPlayer?
 
       if let soundUrl = Bundle.main.url(forResource: "www/" + pathName, withExtension: pathExtension) {
         do {
