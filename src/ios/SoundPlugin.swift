@@ -1,4 +1,4 @@
-import AudioToolbox
+import AVFoundation
 
 @objc(SoundPlugin)
 class SoundPlugin : CDVPlugin {
@@ -9,39 +9,34 @@ class SoundPlugin : CDVPlugin {
   @objc(play:)
   func play(command: CDVInvokedUrlCommand) {
     DispatchQueue.global(qos: .userInitiated).async {
-      let trimmingSet = CharacterSet.init(charactersIn: "/")
       let pluginResult = CDVPluginResult(status: CDVCommandStatus_OK)
+      let pluginResultError = CDVPluginResult(status: CDVCommandStatus_ERROR)
       let path = command.arguments[0] as? String ?? ""
       let pathURL = NSURL(fileURLWithPath: path)
       let pathExtension = pathURL.pathExtension ?? "mp3"
       let pathName = pathURL.deletingPathExtension?.path ?? ""
-      let trimmedPath = path.trimmingCharacters(in: trimmingSet)
-      let trimmedPathName = pathName.trimmingCharacters(in: trimmingSet)
+      var player: AVAudioPlayer?
 
-      let manager = FileManager.default
-      let documents = try! manager.url(for:.documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false)
-      let documentUrl = documents.appendingPathComponent(trimmedPath)
-      var soundUrl: URL?
+      if let soundUrl = Bundle.main.url(forResource: "www/" + pathName, withExtension: pathExtension) {
+        do {
+          try AVAudioSession.sharedInstance().setCategory(AVAudioSessionCategoryAmbient)
+          try AVAudioSession.sharedInstance().setActive(true)
 
-      if (FileManager().fileExists(atPath: documentUrl.path)) {
-        soundUrl = documentUrl
+          player = try AVAudioPlayer(contentsOf: soundUrl)
+
+          guard let player = player else { return }
+
+          player.play()
+
+          self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
+        } catch let error {
+          print(error.localizedDescription)
+
+          self.commandDelegate.send(pluginResultError, callbackId: command.callbackId)
+        }
       } else {
-        soundUrl = Bundle.main.url(forResource: "www/" + trimmedPathName, withExtension: pathExtension)
+        self.commandDelegate.send(pluginResultError, callbackId: command.callbackId)
       }
-
-      if (soundUrl != nil) {
-        var soundId: SystemSoundID = 0
-
-        AudioServicesCreateSystemSoundID(soundUrl! as CFURL, &soundId)
-
-        AudioServicesAddSystemSoundCompletion(soundId, nil, nil, { (soundId, clientData) -> Void in
-          AudioServicesDisposeSystemSoundID(soundId)
-        }, nil)
-
-        AudioServicesPlaySystemSound(soundId)
-      }
-
-      self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
     }
   }
 
