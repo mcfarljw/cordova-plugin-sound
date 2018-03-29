@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
         id="cordova-plugin-sound"
-        version="0.3.2">
+        version="0.3.3">
 
   <name>Sound Plugin</name>
   <description>A cordova plugin for native sound.</description>
