@@ -45,8 +45,8 @@ public class SoundPlugin extends CordovaPlugin {
             return true;
         }
 
-        if ("release".equals(action)) {
-            release();
+        if ("stopAll".equals(action)) {
+            stopAll();
 
             callbackContext.success();
 
@@ -67,37 +67,37 @@ public class SoundPlugin extends CordovaPlugin {
             mSoundPool = new SoundPool(4, AudioManager.STREAM_MUSIC, 0);
         }
 
-        mSoundPool.setOnLoadCompleteListener(new SoundPool.OnLoadCompleteListener() {
-            @Override
-            public void onLoadComplete(SoundPool soundPool, int soundId, int status) {
-                soundPool.play(soundId, mSoundVolume, mSoundVolume, 1, 0, mSoundRate);
-            }
-        });
+        SoundPool.OnLoadCompleteListener listener = (SoundPool soundPool, int soundId, int status) -> {
+            soundPool.play(soundId, mSoundVolume, mSoundVolume, 1, 0, mSoundRate);
+        };
+
+        mSoundPool.setOnLoadCompleteListener(listener);
     }
 
     private void play (final String path) {
-        cordova.getThreadPool().execute(new Runnable() {
-            public void run() {
-                Context context = cordova.getActivity().getApplicationContext();
-                String trimmedPath = path.replaceAll("^/+", "");
-                String absolutePath = context.getFilesDir().getAbsolutePath() + "/files/" + trimmedPath;
-                File file = new File(Uri.parse(absolutePath).getPath());
+        this.stopAll();
 
-                if (file.exists()) {
-                    mSoundPool.load(file.getPath(), 1);
-                } else {
-                    try {
-                        mSoundPool.load(context.getAssets().openFd("www/" + trimmedPath), 1);
-                    } catch (IOException error) {
-                        Log.d(PLUGIN_NAME, "not found: " + error.getMessage());
-                    }
+        Runnable thread = () -> {
+            Context context = cordova.getActivity().getApplicationContext();
+            String trimmedPath = path.replaceAll("^/+", "");
+            String absolutePath = context.getFilesDir().getAbsolutePath() + "/files/" + trimmedPath;
+            File file = new File(Uri.parse(absolutePath).getPath());
+
+            if (file.exists()) {
+                mSoundPool.load(file.getPath(), 1);
+            } else {
+                try {
+                    mSoundPool.load(context.getAssets().openFd("www/" + trimmedPath), 1);
+                } catch (IOException error) {
+                    Log.d(PLUGIN_NAME, "not found: " + error.getMessage());
                 }
-
             }
-        });
+        };
+
+        cordova.getThreadPool().execute(thread);
     }
 
-    private void release () {
+    private void stopAll () {
         this.loadSoundPool();
     }
 }

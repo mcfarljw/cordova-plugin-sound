@@ -14,5 +14,12 @@ module.exports = {
         exec(resolve, reject, 'SoundPlugin', 'release', [])
       }
     )
+  },
+  stopAll: function () {
+    return new Promise(
+      function (resolve, reject) {
+        exec(resolve, reject, 'SoundPlugin', 'stopAll', [])
+      }
+    )
   }
 }

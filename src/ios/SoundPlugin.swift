@@ -40,10 +40,12 @@ class SoundPlugin : CDVPlugin {
     }
   }
 
-  @objc(release:)
-  func release(command: CDVInvokedUrlCommand) {
+  @objc(stopAll:)
+  func stopAll(command: CDVInvokedUrlCommand) {
     DispatchQueue.global(qos: .userInitiated).async {
       let pluginResult = CDVPluginResult(status: CDVCommandStatus_OK)
+
+      Sound.stopAll()
 
       self.commandDelegate.send(pluginResult, callbackId: command.callbackId)
     }
