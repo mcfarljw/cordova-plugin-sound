@@ -118,6 +118,10 @@ public class SoundPlugin extends CordovaPlugin {
     }
 
     private void stop (final String track) {
+        if (!audioTracks.containsKey(track)) {
+            return;
+        }
+
         try {
             for (HashMap.Entry<String, Integer> entry : audioTracks.get(track).entrySet()) {
                 mSoundPool.unload(entry.getValue());
