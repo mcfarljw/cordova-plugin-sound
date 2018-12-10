@@ -1,6 +1,6 @@
 {
   "name": "cordova-plugin-sound",
-  "version": "0.6.1",
+  "version": "0.6.2",
   "description": "Cordova plugin for native sound.",
   "author": "Joshua McFarland",
   "license": "MIT",
