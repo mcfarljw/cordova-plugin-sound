@@ -17,6 +17,7 @@ import org.json.JSONException;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 
 public class SoundPlugin extends CordovaPlugin {
 
@@ -24,6 +25,7 @@ public class SoundPlugin extends CordovaPlugin {
 
     private SoundPool mSoundPool;
 
+    private HashMap<String, HashMap<String, Integer>> audioTracks = new HashMap<>();
     private float mSoundRate = 1.0f;
     private float mSoundVolume = 1.0f;
 
@@ -36,9 +38,16 @@ public class SoundPlugin extends CordovaPlugin {
 
     @Override
     public boolean execute (String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
-
         if ("play".equals(action)) {
-            play(args.getString(0));
+            play(args.getString(0), args.getString(1));
+
+            callbackContext.success();
+
+            return true;
+        }
+
+        if ("stop".equals(action)) {
+            stop(args.getString(0));
 
             callbackContext.success();
 
@@ -74,30 +83,60 @@ public class SoundPlugin extends CordovaPlugin {
         mSoundPool.setOnLoadCompleteListener(listener);
     }
 
-    private void play (final String path) {
-        this.stopAll();
+    private void play (final String path, final String track) {
+        final Context context = cordova.getActivity().getApplicationContext();
+        final String trimmedPath = path.replaceAll("^/+", "");
+        final String absolutePath = context.getFilesDir().getAbsolutePath() + "/files/" + trimmedPath;
+        final String parsedPath = Uri.parse(absolutePath).getPath();
+
+        if (!audioTracks.containsKey(track)) {
+            audioTracks.put(track, new HashMap<>());
+        }
 
         Runnable thread = () -> {
-            Context context = cordova.getActivity().getApplicationContext();
-            String trimmedPath = path.replaceAll("^/+", "");
-            String absolutePath = context.getFilesDir().getAbsolutePath() + "/files/" + trimmedPath;
-            File file = new File(Uri.parse(absolutePath).getPath());
+            final File file = new File(parsedPath);
+            int soundId;
 
             if (file.exists()) {
-                mSoundPool.load(file.getPath(), 1);
+                soundId = mSoundPool.load(file.getPath(), 1);
+                audioTracks.get(track).put(trimmedPath, soundId);
             } else {
                 try {
-                    mSoundPool.load(context.getAssets().openFd("www/" + trimmedPath), 1);
+                    soundId = mSoundPool.load(context.getAssets().openFd("www/" + trimmedPath), 1);
+                    audioTracks.get(track).put(trimmedPath, soundId);
                 } catch (IOException error) {
                     Log.d(PLUGIN_NAME, "not found: " + error.getMessage());
                 }
             }
         };
 
-        cordova.getThreadPool().execute(thread);
+        if (audioTracks.get(track).containsKey(trimmedPath)) {
+            mSoundPool.play(audioTracks.get(track).get(trimmedPath), mSoundVolume, mSoundVolume, 1, 0, mSoundRate);
+        } else {
+            cordova.getThreadPool().execute(thread);
+        }
+    }
+
+    private void stop (final String track) {
+        try {
+            for (HashMap.Entry<String, Integer> entry : audioTracks.get(track).entrySet()) {
+                mSoundPool.unload(entry.getValue());
+            }
+
+            audioTracks.remove(track);
+        } catch (NullPointerException error) {
+            Log.i(PLUGIN_NAME, "Unable to stop audio track!");
+        }
+
     }
 
     private void stopAll () {
-        this.loadSoundPool();
+        try {
+            for (HashMap.Entry<String, HashMap<String, Integer>> entry : audioTracks.entrySet()) {
+                stop(entry.getKey());
+            }
+        } catch (NullPointerException error) {
+            Log.i(PLUGIN_NAME, "Unable to stop audio tracks!");
+        }
     }
 }

@@ -1,17 +1,17 @@
 var exec = require('cordova/exec')
 
 module.exports = {
-  play: function (path, volume, rate) {
+  play: function (path, track) {
     return new Promise(
       function (resolve, reject) {
-        exec(resolve, reject, 'SoundPlugin', 'play', [path])
+        exec(resolve, reject, 'SoundPlugin', 'play', [path, track || 'default'])
       }
     )
   },
-  release: function () {
+  stop: function (track) {
     return new Promise(
       function (resolve, reject) {
-        exec(resolve, reject, 'SoundPlugin', 'release', [])
+        exec(resolve, reject, 'SoundPlugin', 'stop', [track || 'default'])
       }
     )
   },

@@ -19,8 +19,6 @@
     <clobbers target="plugins.sound" />
   </js-module>
 
-  <dependency id="cordova-plugin-add-swift-support" version="1.7.2"/>
-
   <platform name="android">
 
     <config-file target="config.xml" parent="/*">
@@ -43,8 +41,8 @@
 			</feature>
 		</config-file>
 
-    <source-file src="src/ios/SoundPlugin.swift" />
-    <source-file src="src/ios/Sound.swift" />
+    <header-file src="src/ios/SoundPlugin.h" />
+    <source-file src="src/ios/SoundPlugin.m" />
 
   </platform>
 
