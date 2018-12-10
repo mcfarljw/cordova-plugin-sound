@@ -19,24 +19,25 @@
 - (void) play:(CDVInvokedUrlCommand*)command {
     CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
     NSString *path = [command.arguments objectAtIndex:0];
+    NSString *track = [command.arguments objectAtIndex:1];
     NSString *trimmedPath = [path stringByTrimmingCharactersInSet: [NSCharacterSet whitespaceCharacterSet]];
     NSString *documentPath = [NSString stringWithFormat:@"%@%@", self.documentDirectory, trimmedPath];
     NSString *wwwPath = [NSString stringWithFormat:@"%@%@", self.wwwDirectory, trimmedPath];
 
-    if (!self.audioTracks[@"default"]) {
-        self.audioTracks[@"default"] = [NSMutableDictionary new];
+    if (!self.audioTracks[track]) {
+        self.audioTracks[track] = [NSMutableDictionary new];
     }
 
     [self.commandDelegate runInBackground:^{
-        if (self.audioTracks[@"default"][trimmedPath]) {
-            AudioServicesPlaySystemSound((unsigned int)[self.audioTracks[@"default"][trimmedPath] integerValue]);
+        if (self.audioTracks[track][trimmedPath]) {
+            AudioServicesPlaySystemSound((unsigned int)[self.audioTracks[track][trimmedPath] integerValue]);
         } else {
             if ([[NSFileManager defaultManager] fileExistsAtPath: wwwPath]) {
                 NSURL *audioUrl = [NSURL fileURLWithPath:wwwPath];
                 SystemSoundID soundId;
                 AudioServicesCreateSystemSoundID((__bridge CFURLRef)audioUrl, &soundId);
 
-                self.audioTracks[@"default"][trimmedPath] = [NSNumber numberWithInteger:soundId];
+                self.audioTracks[track][trimmedPath] = [NSNumber numberWithInteger:soundId];
 
                 AudioServicesPlaySystemSound(soundId);
             } else if ([[NSFileManager defaultManager] fileExistsAtPath: documentPath]) {
@@ -44,7 +45,7 @@
                 SystemSoundID soundId;
                 AudioServicesCreateSystemSoundID((__bridge CFURLRef)audioUrl, &soundId);
 
-                self.audioTracks[@"default"][trimmedPath] = [NSNumber numberWithInteger:soundId];
+                self.audioTracks[track][trimmedPath] = [NSNumber numberWithInteger:soundId];
 
                 AudioServicesPlaySystemSound(soundId);
             } else {
