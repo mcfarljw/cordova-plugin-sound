@@ -124,6 +124,7 @@ public class SoundPlugin extends CordovaPlugin {
 
         try {
             for (HashMap.Entry<String, Integer> entry : audioTracks.get(track).entrySet()) {
+                mSoundPool.stop(entry.getValue());
                 mSoundPool.unload(entry.getValue());
             }
 
