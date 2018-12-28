@@ -19,37 +19,45 @@
 - (void) play:(CDVInvokedUrlCommand*)command {
     CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
     NSString *path = [command.arguments objectAtIndex:0];
-    NSString *track = [command.arguments objectAtIndex:1];
+    NSNumber *track = [command.arguments objectAtIndex:1];
     NSString *trimmedPath = [path stringByTrimmingCharactersInSet: [NSCharacterSet whitespaceCharacterSet]];
     NSString *documentPath = [NSString stringWithFormat:@"%@%@", self.documentDirectory, trimmedPath];
     NSString *wwwPath = [NSString stringWithFormat:@"%@%@", self.wwwDirectory, trimmedPath];
-
-    if (!self.audioTracks[track]) {
-        self.audioTracks[track] = [NSMutableDictionary new];
-    }
 
     [self.commandDelegate runInBackground:^{
         if (self.audioTracks[track][trimmedPath]) {
             AudioServicesPlaySystemSound((unsigned int)[self.audioTracks[track][trimmedPath] integerValue]);
         } else {
+            NSURL *audioUrl = nil;
+
             if ([[NSFileManager defaultManager] fileExistsAtPath: wwwPath]) {
-                NSURL *audioUrl = [NSURL fileURLWithPath:wwwPath];
-                SystemSoundID soundId;
-                AudioServicesCreateSystemSoundID((__bridge CFURLRef)audioUrl, &soundId);
-
-                self.audioTracks[track][trimmedPath] = [NSNumber numberWithInteger:soundId];
-
-                AudioServicesPlaySystemSound(soundId);
+                audioUrl = [NSURL fileURLWithPath:wwwPath];
             } else if ([[NSFileManager defaultManager] fileExistsAtPath: documentPath]) {
-                NSURL *audioUrl = [NSURL fileURLWithPath:documentPath];
-                SystemSoundID soundId;
-                AudioServicesCreateSystemSoundID((__bridge CFURLRef)audioUrl, &soundId);
+                audioUrl = [NSURL fileURLWithPath:documentPath];
+            }
 
-                self.audioTracks[track][trimmedPath] = [NSNumber numberWithInteger:soundId];
+            if (audioUrl != nil) {
+                if ([track  isEqual: [NSNumber numberWithInt:0]]) {
+                    self.audioPlayer1 = [[AVAudioPlayer alloc] initWithContentsOfURL:audioUrl error:nil];
+                    self.audioPlayer1.delegate = self.appDelegate;
 
-                AudioServicesPlaySystemSound(soundId);
-            } else {
-                NSLog(@"Audio not found!");
+                    [self.audioPlayer1 play];
+                } else if ([track  isEqual: [NSNumber numberWithInt:1]]) {
+                    self.audioPlayer2 = [[AVAudioPlayer alloc] initWithContentsOfURL:audioUrl error:nil];
+                    self.audioPlayer2.delegate = self.appDelegate;
+
+                    [self.audioPlayer2 play];
+                } else if ([track  isEqual: [NSNumber numberWithInt:2]]) {
+                    self.audioPlayer3 = [[AVAudioPlayer alloc] initWithContentsOfURL:audioUrl error:nil];
+                    self.audioPlayer3.delegate = self.appDelegate;
+
+                    [self.audioPlayer3 play];
+                } else {
+                    self.audioPlayer1 = [[AVAudioPlayer alloc] initWithContentsOfURL:audioUrl error:nil];
+                    self.audioPlayer1.delegate = self.appDelegate;
+
+                    [self.audioPlayer1 play];
+                }
             }
         }
 
@@ -59,12 +67,17 @@
 
 - (void) stop:(CDVInvokedUrlCommand*)command {
     CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
-    NSString *trackKey = [command.arguments objectAtIndex:0];
+    NSString *track = [command.arguments objectAtIndex:0];
 
     [self.commandDelegate runInBackground:^{
-        for (id soundKey in self.audioTracks[trackKey]) {
-            AudioServicesDisposeSystemSoundID((unsigned int)[self.audioTracks[trackKey][soundKey] integerValue]);
-            [self.audioTracks[trackKey] removeObjectForKey:soundKey];
+        if ([track  isEqual: [NSNumber numberWithInt:0]]) {
+            [self.audioPlayer1 stop];
+        } else if ([track  isEqual: [NSNumber numberWithInt:1]]) {
+            [self.audioPlayer2 stop];
+        } else if ([track  isEqual: [NSNumber numberWithInt:2]]) {
+            [self.audioPlayer3 stop];
+        } else {
+            [self.audioPlayer1 stop];
         }
 
         [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
@@ -75,12 +88,9 @@
     CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
 
     [self.commandDelegate runInBackground:^{
-        for (id trackKey in self.audioTracks) {
-            for (id soundKey in self.audioTracks[trackKey]) {
-                AudioServicesDisposeSystemSoundID((unsigned int)[self.audioTracks[trackKey][soundKey] integerValue]);
-                [self.audioTracks[trackKey] removeObjectForKey:soundKey];
-            }
-        }
+        [self.audioPlayer1 stop];
+        [self.audioPlayer2 stop];
+        [self.audioPlayer3 stop];
 
         [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
     }];

@@ -4,14 +4,14 @@ module.exports = {
   play: function (path, track) {
     return new Promise(
       function (resolve, reject) {
-        exec(resolve, reject, 'SoundPlugin', 'play', [path, track || 'default'])
+        exec(resolve, reject, 'SoundPlugin', 'play', [path, track || 0])
       }
     )
   },
   stop: function (track) {
     return new Promise(
       function (resolve, reject) {
-        exec(resolve, reject, 'SoundPlugin', 'stop', [track || 'default'])
+        exec(resolve, reject, 'SoundPlugin', 'stop', [track || 0])
       }
     )
   },
