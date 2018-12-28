@@ -7,7 +7,6 @@
     NSError *error;
     NSArray *searchPaths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
 
-    self.audioTracks = [NSMutableDictionary new];
     self.documentDirectory = [searchPaths objectAtIndex:0];
     self.wwwDirectory = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"www"];
 
@@ -25,39 +24,35 @@
     NSString *wwwPath = [NSString stringWithFormat:@"%@%@", self.wwwDirectory, trimmedPath];
 
     [self.commandDelegate runInBackground:^{
-        if (self.audioTracks[track][trimmedPath]) {
-            AudioServicesPlaySystemSound((unsigned int)[self.audioTracks[track][trimmedPath] integerValue]);
-        } else {
-            NSURL *audioUrl = nil;
+        NSURL *audioUrl = nil;
 
-            if ([[NSFileManager defaultManager] fileExistsAtPath: wwwPath]) {
-                audioUrl = [NSURL fileURLWithPath:wwwPath];
-            } else if ([[NSFileManager defaultManager] fileExistsAtPath: documentPath]) {
-                audioUrl = [NSURL fileURLWithPath:documentPath];
-            }
+        if ([[NSFileManager defaultManager] fileExistsAtPath: wwwPath]) {
+            audioUrl = [NSURL fileURLWithPath:wwwPath];
+        } else if ([[NSFileManager defaultManager] fileExistsAtPath: documentPath]) {
+            audioUrl = [NSURL fileURLWithPath:documentPath];
+        }
 
-            if (audioUrl != nil) {
-                if ([track  isEqual: [NSNumber numberWithInt:0]]) {
-                    self.audioPlayer1 = [[AVAudioPlayer alloc] initWithContentsOfURL:audioUrl error:nil];
-                    self.audioPlayer1.delegate = self.appDelegate;
+        if (audioUrl != nil) {
+            if ([track  isEqual: [NSNumber numberWithInt:0]]) {
+                self.audioPlayer1 = [[AVAudioPlayer alloc] initWithContentsOfURL:audioUrl error:nil];
+                self.audioPlayer1.delegate = self.appDelegate;
 
-                    [self.audioPlayer1 play];
-                } else if ([track  isEqual: [NSNumber numberWithInt:1]]) {
-                    self.audioPlayer2 = [[AVAudioPlayer alloc] initWithContentsOfURL:audioUrl error:nil];
-                    self.audioPlayer2.delegate = self.appDelegate;
+                [self.audioPlayer1 play];
+            } else if ([track  isEqual: [NSNumber numberWithInt:1]]) {
+                self.audioPlayer2 = [[AVAudioPlayer alloc] initWithContentsOfURL:audioUrl error:nil];
+                self.audioPlayer2.delegate = self.appDelegate;
 
-                    [self.audioPlayer2 play];
-                } else if ([track  isEqual: [NSNumber numberWithInt:2]]) {
-                    self.audioPlayer3 = [[AVAudioPlayer alloc] initWithContentsOfURL:audioUrl error:nil];
-                    self.audioPlayer3.delegate = self.appDelegate;
+                [self.audioPlayer2 play];
+            } else if ([track  isEqual: [NSNumber numberWithInt:2]]) {
+                self.audioPlayer3 = [[AVAudioPlayer alloc] initWithContentsOfURL:audioUrl error:nil];
+                self.audioPlayer3.delegate = self.appDelegate;
 
-                    [self.audioPlayer3 play];
-                } else {
-                    self.audioPlayer1 = [[AVAudioPlayer alloc] initWithContentsOfURL:audioUrl error:nil];
-                    self.audioPlayer1.delegate = self.appDelegate;
+                [self.audioPlayer3 play];
+            } else {
+                self.audioPlayer1 = [[AVAudioPlayer alloc] initWithContentsOfURL:audioUrl error:nil];
+                self.audioPlayer1.delegate = self.appDelegate;
 
-                    [self.audioPlayer1 play];
-                }
+                [self.audioPlayer1 play];
             }
         }
 
