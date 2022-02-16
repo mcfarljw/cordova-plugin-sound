@@ -102,10 +102,17 @@ public class SoundPlugin extends CordovaPlugin {
                 audioTracks.get(track).put(trimmedPath, soundId);
             } else {
                 try {
+                    soundId = mSoundPool.load(context.getAssets().openFd("public/" + trimmedPath), 1);
+                    audioTracks.get(track).put(trimmedPath, soundId);
+                } catch (IOException error) {
+                    Log.d(PLUGIN_NAME, "public file not found: " + error.getMessage());
+                }
+
+                try {
                     soundId = mSoundPool.load(context.getAssets().openFd("www/" + trimmedPath), 1);
                     audioTracks.get(track).put(trimmedPath, soundId);
                 } catch (IOException error) {
-                    Log.d(PLUGIN_NAME, "not found: " + error.getMessage());
+                    Log.d(PLUGIN_NAME, "www file not found: " + error.getMessage());
                 }
             }
         };

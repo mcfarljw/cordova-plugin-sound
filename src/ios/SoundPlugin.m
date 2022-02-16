@@ -9,6 +9,7 @@
 
     self.documentDirectory = [searchPaths objectAtIndex:0];
     self.wwwDirectory = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"www"];
+    self.publicDirectory = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"public"];
 
     if (![[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryPlayback withOptions:AVAudioSessionCategoryOptionMixWithOthers error:&error]) {
         NSLog(@"Unable to set audio session category: %@", error);
@@ -22,11 +23,14 @@
     NSString *trimmedPath = [path stringByTrimmingCharactersInSet: [NSCharacterSet whitespaceCharacterSet]];
     NSString *documentPath = [NSString stringWithFormat:@"%@%@", self.documentDirectory, trimmedPath];
     NSString *wwwPath = [NSString stringWithFormat:@"%@%@", self.wwwDirectory, trimmedPath];
+    NSString *publicPath = [NSString stringWithFormat:@"%@%@", self.publicDirectory, trimmedPath];
 
     [self.commandDelegate runInBackground:^{
         NSURL *audioUrl = nil;
 
-        if ([[NSFileManager defaultManager] fileExistsAtPath: wwwPath]) {
+        if ([[NSFileManager defaultManager] fileExistsAtPath: publicPath]) {
+            audioUrl = [NSURL fileURLWithPath:publicPath];
+        } else if ([[NSFileManager defaultManager] fileExistsAtPath: wwwPath]) {
             audioUrl = [NSURL fileURLWithPath:wwwPath];
         } else if ([[NSFileManager defaultManager] fileExistsAtPath: documentPath]) {
             audioUrl = [NSURL fileURLWithPath:documentPath];

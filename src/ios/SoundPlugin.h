@@ -9,6 +9,7 @@
 @property (strong, nonatomic) NSArray *audioPlayers;
 @property (strong, nonatomic) NSString *documentDirectory;
 @property (strong, nonatomic) NSString *wwwDirectory;
+@property (strong, nonatomic) NSString *publicDirectory;
 
 - (void) play:(CDVInvokedUrlCommand*)command;
 - (void) stop:(CDVInvokedUrlCommand*)command;
